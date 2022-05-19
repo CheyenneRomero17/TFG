@@ -28,18 +28,51 @@ risk <- merge(risk, r3, all = TRUE)
 proxy <- merge(p1, p2, all = TRUE)
 proxy <- merge(proxy, p3, all = TRUE)
 
+risk <- risk[-(which(risk$IID == patient)),]
+proxy <- proxy[-(which(proxy$IID == patient)),]
+
 #################################### MODELS ####################################
 # install.packages('lme4')
 # library(lme4)
 # install.packages('nlme')
 library(nlme)
 
-tmp_data <- data.frame(volumes$Subject[volumes$Subject %in% risk$IID] ,volumes$hippocampal_tail[volumes$Subject %in% risk$IID])
-colnames(tmp_data) <- c('ID', 'hippocampal_tail')
-tmp_data$SNP <- NA
+tmp <- data2[data2$RID %in% risk$IID, c(1,2,7,8,9,10,11,12)]
+tmp$SNP <- NA
+tmp$h_subregion <- NA
 
-for (i in risk$IID){
-  tmp_data$SNP[tmp_data$ID == i] <- risk$rs4575098_A[risk$IID == i]
+##### Simple Model #####
+simple_model_fitting <- function(volumes, sr, snp_data, tmp, snp){
+  print(snp)
+  for (id in snp_data$IID){
+    tmp$SNP[tmp$RID==id] <- risk[,snp][snp_data$IID==id]
+    tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
+  }
+  
+  tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
+  fit <- lme(h_subregion~SNP+AGE+PTGENDER+DX.bl+PTEDUCAT+IntraCranialVol+VISCODE2, random = ~1|RID, data = tmp, control = lmeControl(opt = "optim"))
+
+  return(list(summary(fit)))
 }
 
-fit <- lme(hippocampal_tail~SNP, random = ~(1|ID), data = tmp_data)
+fit <- vector(mode = "list", length = 0)
+for (snp in (colnames(risk)[7:ncol(risk)])){
+  model <- simple_model_fitting(volumes, 'hippocampal_tail', risk, tmp, snp)
+  fit <- c(fit, model)
+}
+
+##### Stratified Model #####
+tmp$DX.bl <- NA
+stratified_model_fitting <- function(volumes, h_subregion, snp_data, dem_data, group, tmp, snp){
+  print(snp)
+  for (id in snp_data$IID){
+    tmp$SNP[tmp$RID==id] <- risk[,snp][snp_data$IID==id]
+    tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
+    tmp$DX.bl[tmp$RID == id] <- unique(dem_data$DX.bl[dem_data$RID == id])
+  }
+  
+  
+  fit <- lme(h_subregion~SNP, random = ~1|ID, data = tmp_data[tmp_data$DX.bl==group,])
+  return(list(summary(fit)))
+}
+fit <- stratified_model_fitting(volumes, 'hippocampal_tail', risk, data2, 'AD')

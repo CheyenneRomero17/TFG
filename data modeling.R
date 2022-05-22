@@ -156,3 +156,65 @@ for (type in list(risk, proxy)){
     save(fit, file=paste('./stratified/',sr,'_apoe_',type,'.RData', sep=''))
   }
 }
+
+##### Interaction Model #####
+library(lme4)
+
+interaction_model_fitting <- function(volumes, sr, snp_data, tmp, snp, apoe=FALSE){
+  tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
+  for (id in tmp$RID){
+    tmp$SNP[tmp$RID==id] <- risk[,snp][snp_data$IID==id]
+    tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
+  }
+  
+  if(apoe){
+    fit <- lme(h_subregion~SNP+AGE+PTGENDER+DX.bl+PTEDUCAT+IntraCranialVol+
+                 VISCODE2+APOE4+SNP*VISCODE2,random = ~1|RID, data = tmp, 
+               control = lmeControl(opt = "optim"))    
+  }else{
+    fit <- lmer(h_subregion~SNP+AGE+PTGENDER+DX.bl+PTEDUCAT+IntraCranialVol+
+                 VISCODE2+SNP*VISCODE2+(1|RID), data = tmp)
+  }
+  
+  return(list(summary(fit)))
+}
+
+model <- interaction_model_fitting(volumes,'hippocampal_tail', risk, tmp,'rs4575098_A')
+
+
+### Creating and saving models ###
+# without apoe4
+for (type in list(risk, proxy)){
+  print(type)
+  tmp <- data_gather(data2, type)
+  
+  for (sr in colnames(volumes)[2:ncol(volumes)]){
+    fit <- vector(mode = "list", length = 0)
+    print(sr)
+    for (snp in (colnames(risk)[7:ncol(risk)])){
+      print(snp)
+      model <- simple_model_fitting(volumes, sr, type, tmp, snp)
+      fit <- c(fit, model)
+    }
+    
+    save(fit, file=paste('./interaction/',sr,'_',type,'.RData', sep=''))
+  }
+}
+
+# with apoe4
+for (type in c('risk', 'proxy')){
+  print(type)
+  tmp <- data_gather(data2, type)
+  
+  for (sr in colnames(volumes)[2:ncol(volumes)]){
+    fit <- vector(mode = "list", length = 0)
+    print(sr)
+    for (snp in (colnames(risk)[7:ncol(risk)])){
+      print(snp)
+      model <- simple_model_fitting(volumes, sr, type, tmp, snp, apoe=TRUE)
+      fit <- c(fit, model)
+    }
+    
+    save(fit, file=paste('./interaction/',sr,'_apoe_',type,'.RData', sep=''))
+  }
+}

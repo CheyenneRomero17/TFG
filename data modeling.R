@@ -46,7 +46,7 @@ simple_model_fitting <- function(volumes, sr, snp_data, tmp, snp, apoe=FALSE){
   tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
   
   for (id in tmp$RID){
-    tmp$SNP[tmp$RID==id] <- risk[,snp][snp_data$IID==id]
+    tmp$SNP[tmp$RID==id] <- snp_data[,snp][snp_data$IID==id]
     tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
   }
   
@@ -66,6 +66,7 @@ simple_model_fitting <- function(volumes, sr, snp_data, tmp, snp, apoe=FALSE){
 
 ### Creating and saving models ###
 # without apoe4
+falg <- TRUE
 for (type in list(risk, proxy)){
   tmp <- data_gather(data2, type)
   
@@ -78,11 +79,17 @@ for (type in list(risk, proxy)){
     }
     
     # Saving models for every subregion into a new directory
-    save(fit, file=paste('./simple/',sr,'_',type,'.RData', sep='')) 
+    if(flag){
+      save(fit, file=paste('./simple/',sr,'_risk.RData', sep=''))
+    }else{
+      save(fit, file=paste('./simple/',sr,'_proxy.RData', sep=''))
+    }
   }
+  flag = FALSE
 }
 
 # with apoe4
+flag <- TRUE
 for (type in list(risk, proxy)){
   tmp <- data_gather(data2, type)
   
@@ -94,8 +101,13 @@ for (type in list(risk, proxy)){
       fit <- c(fit, model)
     }
     
-    save(fit, file=paste('./simple/',sr,'_apoe_',type,'.RData', sep=''))
+    if(flag){
+      save(fit, file=paste('./simple/',sr,'_apoe_risk.RData', sep=''))
+    }else{
+      save(fit, file=paste('./simple/',sr,'_apoe_proxy.RData', sep=''))
+    }
   }
+  flag = FALSE
 }
 
 
@@ -104,7 +116,7 @@ stratified_model_fitting <- function(volumes, sr, snp_data, group, tmp, snp, apo
   tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
   
   for (id in tmp$IID){
-    tmp$SNP[tmp$RID==id] <- risk[,snp][snp_data$IID==id]
+    tmp$SNP[tmp$RID==id] <- snp_data[,snp][snp_data$IID==id]
     tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
   }
   
@@ -122,6 +134,7 @@ stratified_model_fitting <- function(volumes, sr, snp_data, group, tmp, snp, apo
 
 ### Creating and saving models ###
 # without apoe4
+flag <- TRUE
 for (type in list(risk, proxy){
   tmp <- data_gather(data2, type)
   
@@ -135,11 +148,17 @@ for (type in list(risk, proxy){
       }
     }
     
-    save(fit, file=paste('./stratified/',sr,'_',type,'.RData', sep=''))
+    if(flag){
+      save(fit, file=paste('./stratified/',sr,'_risk.RData', sep=''))
+    }else{
+      save(fit, file=paste('./stratified/',sr,'_proxy.RData', sep=''))
+    }
   }
+  flag = FALSE
 }
 
 # with apoe4
+flag <- TRUE
 for (type in list(risk, proxy)){
   tmp <- data_gather(data2, type)
   
@@ -153,6 +172,12 @@ for (type in list(risk, proxy)){
       }
     }
     
-    save(fit, file=paste('./stratified/',sr,'_apoe_',type,'.RData', sep=''))
+    # Saving the models
+    if(flag){
+      save(fit, file=paste('./stratified/',sr,'_apoe_risk.RData', sep=''))
+    }else{
+      save(fit, file=paste('./stratified/',sr,'_apoe_proxy.RData', sep=''))
+    }
   }
+  flag = FALSE
 }

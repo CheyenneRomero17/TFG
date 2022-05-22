@@ -43,12 +43,12 @@ tmp$h_subregion <- NA
 
 ##### Simple Model #####
 simple_model_fitting <- function(volumes, sr, snp_data, tmp, snp, apoe=FALSE){
-  print(snp)
-  for (id in snp_data$IID){
+  tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
+  
+  for (id in tmp$RID){
     tmp$SNP[tmp$RID==id] <- risk[,snp][snp_data$IID==id]
     tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
   }
-  tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
   
   if(apoe){
     fit <- lme(h_subregion~SNP+AGE+PTGENDER+DX.bl+PTEDUCAT+IntraCranialVol+
@@ -66,7 +66,7 @@ simple_model_fitting <- function(volumes, sr, snp_data, tmp, snp, apoe=FALSE){
 
 ### Creating and saving models ###
 # without apoe4
-for (type in c('risk', 'proxy')){
+for (type in list(risk, proxy)){
   tmp <- data_gather(data2, type)
   
   for (sr in colnames(volumes)[2:ncol(volumes)]){
@@ -83,7 +83,7 @@ for (type in c('risk', 'proxy')){
 }
 
 # with apoe4
-for (type in c('risk', 'proxy')){
+for (type in list(risk, proxy)){
   tmp <- data_gather(data2, type)
   
   for (sr in colnames(volumes)[2:ncol(volumes)]){
@@ -101,13 +101,12 @@ for (type in c('risk', 'proxy')){
 
 ##### Stratified Model #####
 stratified_model_fitting <- function(volumes, sr, snp_data, group, tmp, snp, apoe=FALSE){
-  print(snp)
-  for (id in snp_data$IID){
+  tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
+  
+  for (id in tmp$IID){
     tmp$SNP[tmp$RID==id] <- risk[,snp][snp_data$IID==id]
     tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
   }
-  
-  tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
   
   if(apoe){
     fit <- lme(h_subregion~SNP+AGE+PTGENDER+PTEDUCAT+IntraCranialVol+VISCODE2+APOE4, 
@@ -123,7 +122,7 @@ stratified_model_fitting <- function(volumes, sr, snp_data, group, tmp, snp, apo
 
 ### Creating and saving models ###
 # without apoe4
-for (type in c('risk', 'proxy')){
+for (type in list(risk, proxy){
   tmp <- data_gather(data2, type)
   
   for (sr in colnames(volumes)[2:ncol(volumes)]){
@@ -141,7 +140,7 @@ for (type in c('risk', 'proxy')){
 }
 
 # with apoe4
-for (type in c('risk', 'proxy')){
+for (type in list(risk, proxy)){
   tmp <- data_gather(data2, type)
   
   for (sr in colnames(volumes)[2:ncol(volumes)]){

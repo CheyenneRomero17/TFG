@@ -19,7 +19,9 @@ volumes <- read.table('added_volumes.txt', header = TRUE)
 library(outliers)
 idx <- which(outlier(data$IntraCranialVol, logical = TRUE) == TRUE)
 patient <- unique(data$RID[idx]) # patient with RID 954, with an IntraCranialVol of 971180.
+
 data2 <- data[-(which(data$RID == patient)),]
+volumes <- volumes[-(which(volumes$Subject == patient)),]
 
 ############################## GATHERING THE DATA ##############################
 risk <- merge(r1, r2, all = TRUE)
@@ -31,153 +33,24 @@ proxy <- merge(proxy, p3, all = TRUE)
 risk <- risk[-(which(risk$IID == patient)),]
 proxy <- proxy[-(which(proxy$IID == patient)),]
 
-#################################### MODELS ####################################
-# install.packages('lme4')
-# library(lme4)
+# To free memory
+rm(data); rm(r1); rm(r2); rm(r3); rm(p1); rm(p2); rm(p3)
+
+################################## FUNCTIONS ##################################
 # install.packages('nlme')
 library(nlme)
 
-tmp <- data2[data2$RID %in% risk$IID, c(1,2,7,8,9,10,11,12)]
-tmp$SNP <- NA
-tmp$h_subregion <- NA
-
-##### Simple Model #####
-simple_model_fitting <- function(volumes, sr, snp_data, tmp, snp, apoe=FALSE){
-  tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
+data_gather <- function(data, snp_data, volumes, snp, sr){
+  data <- data[data$RID %in% snp_data$IID,c(1,2,7,8,9,10,11,12)]
+  data$SNP <- NA
+  data$h_subregion <- NA
   
-  for (id in tmp$RID){
-    tmp$SNP[tmp$RID==id] <- snp_data[,snp][snp_data$IID==id]
-    tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
+  data <- data[data$RID %in% which(!is.na(snp_data[,snp])),]
+  
+  for (id in data$RID){
+    data$SNP[data$RID==id] <- snp_data[,snp][snp_data$IID==id]
+    data$h_subregion[data$RID==id] <- volumes[,sr][volumes$Subject==id]
   }
   
-  if(apoe){
-    fit <- lme(h_subregion~SNP+AGE+PTGENDER+DX.bl+PTEDUCAT+IntraCranialVol+
-               VISCODE2+APOE4,random = ~1|RID, data = tmp, 
-               control = lmeControl(opt = "optim"))    
-  }else{
-    fit <- lme(h_subregion~SNP+AGE+PTGENDER+DX.bl+PTEDUCAT+IntraCranialVol+
-                 VISCODE2,random = ~1|RID, data = tmp, control = 
-                 lmeControl(opt = "optim"))
-  }
-
-  return(list(summary(fit)))
-}
-
-
-### Creating and saving models ###
-# without apoe4
-falg <- TRUE
-for (type in list(risk, proxy)){
-  tmp <- data_gather(data2, type)
-  
-  for (sr in colnames(volumes)[2:ncol(volumes)]){
-    fit <- vector(mode = "list", length = 0)
-    
-    for (snp in (colnames(risk)[7:ncol(risk)])){
-      model <- simple_model_fitting(volumes, sr, type, tmp, snp)
-      fit <- c(fit, model)
-    }
-    
-    # Saving models for every subregion into a new directory
-    if(flag){
-      save(fit, file=paste('./simple/',sr,'_risk.RData', sep=''))
-    }else{
-      save(fit, file=paste('./simple/',sr,'_proxy.RData', sep=''))
-    }
-  }
-  flag = FALSE
-}
-
-# with apoe4
-flag <- TRUE
-for (type in list(risk, proxy)){
-  tmp <- data_gather(data2, type)
-  
-  for (sr in colnames(volumes)[2:ncol(volumes)]){
-    fit <- vector(mode = "list", length = 0)
-    
-    for (snp in (colnames(risk)[7:ncol(risk)])){
-      model <- simple_model_fitting(volumes, sr, type, tmp, snp, apoe=TRUE)
-      fit <- c(fit, model)
-    }
-    
-    if(flag){
-      save(fit, file=paste('./simple/',sr,'_apoe_risk.RData', sep=''))
-    }else{
-      save(fit, file=paste('./simple/',sr,'_apoe_proxy.RData', sep=''))
-    }
-  }
-  flag = FALSE
-}
-
-
-##### Stratified Model #####
-stratified_model_fitting <- function(volumes, sr, snp_data, group, tmp, snp, apoe=FALSE){
-  tmp <- tmp[tmp$RID %in% which(!is.na(snp_data[,snp])),]
-  
-  for (id in tmp$IID){
-    tmp$SNP[tmp$RID==id] <- snp_data[,snp][snp_data$IID==id]
-    tmp$h_subregion[tmp$RID==id] <- volumes[,sr][volumes$Subject==id]
-  }
-  
-  if(apoe){
-    fit <- lme(h_subregion~SNP+AGE+PTGENDER+PTEDUCAT+IntraCranialVol+VISCODE2+APOE4, 
-               random = ~1|RID, data = tmp[tmp$DX.bl==group,], 
-               control = lmeControl(opt = "optim"))
-  }else{
-    fit <- lme(h_subregion~SNP+AGE+PTGENDER+PTEDUCAT+IntraCranialVol+VISCODE2, 
-               random = ~1|RID, data = tmp[tmp$DX.bl==group,], 
-               control = lmeControl(opt = "optim"))
-  }
-  return(list(summary(fit)))
-}
-
-### Creating and saving models ###
-# without apoe4
-flag <- TRUE
-for (type in list(risk, proxy){
-  tmp <- data_gather(data2, type)
-  
-  for (sr in colnames(volumes)[2:ncol(volumes)]){
-    fit <- vector(mode = "list", length = 0)
-    
-    for (snp in (colnames(risk)[7:ncol(risk)])){
-      for (group in c('AD','CN','MCI')){
-        model <- stratified_model_fitting(volumes, sr, type, group, tmp, snp)
-        fit <- c(fit, model)
-      }
-    }
-    
-    if(flag){
-      save(fit, file=paste('./stratified/',sr,'_risk.RData', sep=''))
-    }else{
-      save(fit, file=paste('./stratified/',sr,'_proxy.RData', sep=''))
-    }
-  }
-  flag = FALSE
-}
-
-# with apoe4
-flag <- TRUE
-for (type in list(risk, proxy)){
-  tmp <- data_gather(data2, type)
-  
-  for (sr in colnames(volumes)[2:ncol(volumes)]){
-    fit <- vector(mode = "list", length = 0)
-    
-    for (snp in (colnames(risk)[7:ncol(risk)])){
-      for (group in c('AD','CN','MCI')){
-        model <- stratified_model_fitting(volumes, sr, type, group, tmp, snp, apoe=TRUE)
-        fit <- c(fit, model)
-      }
-    }
-    
-    # Saving the models
-    if(flag){
-      save(fit, file=paste('./stratified/',sr,'_apoe_risk.RData', sep=''))
-    }else{
-      save(fit, file=paste('./stratified/',sr,'_apoe_proxy.RData', sep=''))
-    }
-  }
-  flag = FALSE
+  return(data)
 }

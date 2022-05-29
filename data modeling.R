@@ -34,7 +34,7 @@ risk <- risk[-(which(risk$IID == patient)),]
 proxy <- proxy[-(which(proxy$IID == patient)),]
 
 # To free memory
-rm(data); rm(r1); rm(r2); rm(r3); rm(p1); rm(p2); rm(p3)
+rm(data); rm(r1); rm(r2); rm(r3); rm(p1); rm(p2); rm(p3); rm(idx); rm(patient)
 
 ################################## FUNCTIONS ##################################
 # install.packages('nlme')

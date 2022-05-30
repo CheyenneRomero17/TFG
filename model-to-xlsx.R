@@ -1,3 +1,4 @@
+library(nlme)
 library(writexl)
 
 # Selection of data
@@ -13,6 +14,7 @@ volume = names(volumes[,2:ncol(volumes)])
 #################################
 
 snps = names(risk[,7:ncol(risk)])
+data <- data2[data2$RID %in% risk$IID,c(1,2,7,8,9,10,11,12)]
 
 coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
 colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
@@ -61,6 +63,7 @@ write_xlsx(coefs, path="risk_apoe.xlsx")
 #################################
 
 snps = names(risk[,7:ncol(risk)])
+data <- data2[data2$RID %in% risk$IID,c(1,2,7,8,9,10,11,12)]
 
 coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
 colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
@@ -109,6 +112,7 @@ write_xlsx(coefs, path="risk.xlsx")
 #################################
 
 snps = names(proxy[,7:ncol(proxy)])
+data <- data2[data2$RID %in% proxy$IID,c(1,2,7,8,9,10,11,12)]
 
 coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
 colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
@@ -156,6 +160,7 @@ write_xlsx(coefs, path="proxy_apoe.xlsx")
 #################################
 
 snps = names(proxy[,7:ncol(proxy)])
+data <- data2[data2$RID %in% proxy$IID,c(1,2,7,8,9,10,11,12)]
 
 coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
 colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
@@ -204,6 +209,7 @@ write_xlsx(coefs, path="proxy.xlsx")
 #################################
 
 snps = names(risk[,7:ncol(risk)])
+data <- data2[data2$RID %in% risk$IID,c(1,2,7,8,9,10,11,12)]
 
 coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
 colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
@@ -252,6 +258,7 @@ write_xlsx(coefs, path="risk_strata.xlsx")
 #################################
 
 snps = names(proxy[,7:ncol(proxy)])
+data <- data2[data2$RID %in% proxy$IID,c(1,2,7,8,9,10,11,12)]
 
 coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
 colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
@@ -300,6 +307,7 @@ write_xlsx(coefs, path="proxy_strata.xlsx")
 #################################
 
 snps = names(risk[,7:ncol(risk)])
+data <- data2[data2$RID %in% risk$IID,c(1,2,7,8,9,10,11,12)]
 
 coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
 colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
@@ -348,6 +356,7 @@ write_xlsx(coefs, path="risk_interact.xlsx")
 #################################
 
 snps = names(proxy[,7:ncol(proxy)])
+data <- data2[data2$RID %in% proxy$IID,c(1,2,7,8,9,10,11,12)]
 
 coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
 colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")

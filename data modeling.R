@@ -37,17 +37,13 @@ proxy <- proxy[-(which(proxy$IID == patient)),]
 rm(data); rm(r1); rm(r2); rm(r3); rm(p1); rm(p2); rm(p3); rm(idx); rm(patient)
 
 ################################## FUNCTIONS ##################################
-# install.packages('nlme')
-library(nlme)
-
 data_gather <- function(data, snp_data, volumes, snp, sr){
-  data <- data[data$RID %in% snp_data$IID,c(1,2,7,8,9,10,11,12)]
+  idx <-unique(data$RID[data$RID %in% snp_data$IID[!is.na(snp_data[,snps[i]])]])
+  data <- data[data$RID %in% idx,]
   data$SNP <- NA
   data$h_subregion <- NA
   
-  data <- data[data$RID %in% which(!is.na(snp_data[,snp])),]
-  
-  for (id in data$RID){
+  for (id in idx){
     data$SNP[data$RID==id] <- snp_data[,snp][snp_data$IID==id]
     data$h_subregion[data$RID==id] <- volumes[,sr][volumes$Subject==id]
   }

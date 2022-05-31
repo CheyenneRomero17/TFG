@@ -210,9 +210,10 @@ write_xlsx(coefs, path="proxy.xlsx")
 
 snps = names(risk[,7:ncol(risk)])
 data <- data2[data2$RID %in% risk$IID,c(1,2,7,8,9,10,11,12)]
+data$DX.bl[data$DX.bl == 'CN'] <- 'ACN'
 
-coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
-colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
+coefs=as.data.frame(matrix(NA,nrow=1,ncol=10))
+colnames(coefs)=c("DateTime","Outcome","Determinant","Type","Model","N","BetaU","SE","T","P")
 count=1
 for(j in 1:length(volume)) {
   print(volume[j])
@@ -233,19 +234,40 @@ for(j in 1:length(volume)) {
     res = s$tTable
     
     #Save analysis details and coefficients
+    # AD
     coefs[count,1]=gsub(" ","_",Sys.time())
     coefs[count,2]=volume[j]
     coefs[count,3]=snps[i]
-    coefs[count,4]=ff
-    coefs[count,5]=3230
-    coefs[count,6:8]=res[2,c(1,2,4)]
-    coefs[count,9]=as.numeric(format(res[2,5], format="e", digits=2))
-    count=count+1
+    coefs[count,4]='AD'
+    coefs[count,5]=ff
+    coefs[count,6]=sum(data$DX.bl=='AD')
+    coefs[count,7:9]=res[10,c(1,2,4)]
+    coefs[count,10]=as.numeric(format(res[10,5], format="e", digits=2))
+    # MCI
+    coefs[count+1,1]=gsub(" ","_",Sys.time())
+    coefs[count+1,2]=volume[j]
+    coefs[count+1,3]=snps[i]
+    coefs[count+1,4]='MCI'
+    coefs[count+1,5]=ff
+    coefs[count+1,6]=sum(data$DX.bl=='MCI')
+    coefs[count+1,7:9]=res[11,c(1,2,4)]
+    coefs[count+1,10]=as.numeric(format(res[11,5], format="e", digits=2))
+    # SMC
+    coefs[count+2,1]=gsub(" ","_",Sys.time())
+    coefs[count+2,2]=volume[j]
+    coefs[count+2,3]=snps[i]
+    coefs[count+2,4]='SMC'
+    coefs[count+2,5]=ff
+    coefs[count+2,6]=sum(data$DX.bl=='SMC')
+    coefs[count+2,7:9]=res[12,c(1,2,4)]
+    coefs[count+2,10]=as.numeric(format(res[12,5], format="e", digits=2))
+    
+    count=count+3
   }
 }
 
 coefs$Beta = coefs$BetaU/coefs$SE
-coefs = coefs[,c(1,2,3,4,5,10,7,8,9,6)]
+coefs = coefs[,c(1,2,3,4,5,6,11,8,9,10,7)]
 
 write_xlsx(coefs, path="risk_strata.xlsx")
 
@@ -259,9 +281,10 @@ write_xlsx(coefs, path="risk_strata.xlsx")
 
 snps = names(proxy[,7:ncol(proxy)])
 data <- data2[data2$RID %in% proxy$IID,c(1,2,7,8,9,10,11,12)]
+data$DX.bl[data$DX.bl == 'CN'] <- 'ACN'
 
-coefs=as.data.frame(matrix(NA,nrow=1,ncol=9))
-colnames(coefs)=c("DateTime","Outcome","Determinant","Model","N","BetaU","SE","T","P")
+coefs=as.data.frame(matrix(NA,nrow=1,ncol=10))
+colnames(coefs)=c("DateTime","Outcome","Determinant","Type","Model","N","BetaU","SE","T","P")
 count=1
 for(j in 1:length(volume)) {
   print(volume[j])
@@ -282,19 +305,40 @@ for(j in 1:length(volume)) {
     res = s$tTable
     
     #Save analysis details and coefficients
+    # AD
     coefs[count,1]=gsub(" ","_",Sys.time())
     coefs[count,2]=volume[j]
     coefs[count,3]=snps[i]
-    coefs[count,4]=ff
-    coefs[count,5]=3230
-    coefs[count,6:8]=res[2,c(1,2,4)]
-    coefs[count,9]=as.numeric(format(res[2,5], format="e", digits=2))
-    count=count+1
+    coefs[count,4]='AD'
+    coefs[count,5]=ff
+    coefs[count,6]=sum(data$DX.bl=='AD')
+    coefs[count,7:9]=res[10,c(1,2,4)]
+    coefs[count,10]=as.numeric(format(res[10,5], format="e", digits=2))
+    # MCI
+    coefs[count+1,1]=gsub(" ","_",Sys.time())
+    coefs[count+1,2]=volume[j]
+    coefs[count+1,3]=snps[i]
+    coefs[count+1,4]='MCI'
+    coefs[count+1,5]=ff
+    coefs[count+1,6]=sum(data$DX.bl=='MCI')
+    coefs[count+1,7:9]=res[11,c(1,2,4)]
+    coefs[count+1,10]=as.numeric(format(res[11,5], format="e", digits=2))
+    # SMC
+    coefs[count+2,1]=gsub(" ","_",Sys.time())
+    coefs[count+2,2]=volume[j]
+    coefs[count+2,3]=snps[i]
+    coefs[count+2,4]='SMC'
+    coefs[count+2,5]=ff
+    coefs[count+2,6]=sum(data$DX.bl=='SMC')
+    coefs[count+2,7:9]=res[12,c(1,2,4)]
+    coefs[count+2,10]=as.numeric(format(res[12,5], format="e", digits=2))
+    
+    count=count+3
   }
 }
 
 coefs$Beta = coefs$BetaU/coefs$SE
-coefs = coefs[,c(1,2,3,4,5,10,7,8,9,6)]
+coefs = coefs[,c(1,2,3,4,5,6,11,8,9,10,7)]
 
 write_xlsx(coefs, path="proxy_strata.xlsx")
 

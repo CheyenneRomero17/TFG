@@ -1,9 +1,20 @@
 library(corrplot)
 library(readxl)
 
-#Load data
-coefs <- read_xlsx("Uni/MatCAD/4t/TFG/data/risk_apoe.xlsx")
+coefs <- read_xlsx("~/Uni/MatCAD/4t/TFG/data/risk_interact.xlsx")
 tis=coefs
+
+#Load sratified data
+coefs <- read_xlsx("~/Uni/MatCAD/4t/TFG/data/proxy_strata.xlsx")
+
+###Deleting problematic SNPs for proxy
+coefs <- coefs[-(which(coefs$Determinant == 'rs114360492_T')),]
+coefs <- coefs[-(which(coefs$Determinant == 'rs184384746_T')),]
+
+###Subseting by group
+tis=coefs[coefs$Type=='AD',]
+tis=coefs[coefs$Type=='MCI',]
+tis=coefs[coefs$Type=='SMC',]
 
 #Create matrices
 tisouts=unique(tis$Outcome)

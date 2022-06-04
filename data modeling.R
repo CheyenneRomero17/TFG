@@ -17,11 +17,19 @@ volumes <- read.table('added_volumes.txt', header = TRUE)
 
 ## Outliers with outlier library
 library(outliers)
+# Intracranvial volum outliers
 idx <- which(outlier(data$IntraCranialVol, logical = TRUE) == TRUE)
 patient <- unique(data$RID[idx]) # patient with RID 954, with an IntraCranialVol of 971180.
 
-data2 <- data[-(which(data$RID == patient)),]
-volumes <- volumes[-(which(volumes$Subject == patient)),]
+data2 <- data[-idx,]
+
+# Hippocampal subregions volumes outliers
+idx <- NULL
+for (i in colnames(volumes)[2:ncol(volumes)]){
+  idx <- c(idx, which(outlier(volumes[,i], logical = TRUE) == TRUE))
+}
+
+patient <- unique(volumes$Subject[idx]) # 419 1293 558 2394 5296
 
 ############################## GATHERING THE DATA ##############################
 risk <- merge(r1, r2, all = TRUE)
@@ -29,9 +37,6 @@ risk <- merge(risk, r3, all = TRUE)
 
 proxy <- merge(p1, p2, all = TRUE)
 proxy <- merge(proxy, p3, all = TRUE)
-
-risk <- risk[-(which(risk$IID == patient)),]
-proxy <- proxy[-(which(proxy$IID == patient)),]
 
 # To free memory
 rm(data); rm(r1); rm(r2); rm(r3); rm(p1); rm(p2); rm(p3); rm(idx); rm(patient)
